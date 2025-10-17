@@ -1,0 +1,24 @@
+# --- Core Deep Learning & NLP (Stage 1: Intent Router) ---
+# PyTorch is recommended as the backend for the transformer model
+torch
+transformers
+datasets
+
+# --- Data Handling & Utilities ---
+# Pandas is used for initial data cleaning and manipulation (Step 1.2)
+# scikit-learn is needed for basic metrics/evaluation on the test set (Step 4.1)
+pandas
+scikit-learn
+
+# --- Response Handler & Task Execution (Stage 2) ---
+# 'requests' is for external API calls, e.g., OpenWeatherMap (Step 3.1)
+requests
+
+# --- User Interface & Deployment ---
+# 'streamlit' is required for the final presentation UI (Step 4.2)
+streamlit
+
+# --- LLM Integration (Small Talk/Generation) ---
+# Required if you choose to use Hugging Face's inference client for Dolly2/LLaMA2
+# Note: You may need a specific library here depending on the FINAL LLM choice (e.g., openai, llama-cpp-python, or simple requests)
+# We will use 'requests' for now, but a dedicated library may be added later.
