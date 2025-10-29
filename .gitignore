@@ -1,0 +1,47 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+.cache/
+
+# Virtual environments
+.venv/
+venv/
+.env/
+.conda/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editors/IDEs
+.vscode/
+.idea/
+
+# Data and Results
+# Ignore everything inside the 'data' folder, but keep the folder itself 
+# tracked if you want to use '.gitkeep' to ensure the empty directory exists
+data/
+!data/.gitkeep
+
+# Model artifacts (keep dir, ignore contents)
+models/intent_classifier/*
+!models/intent_classifier/.gitkeep
+
+# Data caches and large intermediates
+data/**/.cache*/
+data/**/cache*/
+data/**/*.arrow
+
+# Ignore all files and directories inside the 'results' folder
+results/
+
+logs/
+
+# Streamlit
+.streamlit/
+
+# OS files
+.DS_Store
+Thumbs.db
