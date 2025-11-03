@@ -12,7 +12,11 @@ MODEL_DIR = "models/intent_classifier"  # Folder where stage1_classifier saved t
 
 # Load the tokenizer and fine-tuned model from disk
 tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_DIR)
-model = DistilBertForSequenceClassification.from_pretrained(MODEL_DIR)
+model = DistilBertForSequenceClassification.from_pretrained(
+    MODEL_DIR,
+    device_map=None,       # prevent Accelerate from placing model on 'meta'
+)
+model.to("cpu") 
 
 def classify_intent(text):
     """

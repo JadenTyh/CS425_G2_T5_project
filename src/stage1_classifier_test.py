@@ -14,7 +14,7 @@ def classify(text):
     pred_id = torch.argmax(logits, dim=1).item()
     return model.config.id2label[pred_id]
 
-print("✅ Model Loaded!")
+print(" Model Loaded!")
 print("Type a message to classify it. Type 'exit' to quit.\n")
 
 while True:
