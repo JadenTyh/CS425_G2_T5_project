@@ -28,6 +28,7 @@ data/
 # Model artifacts (keep dir, ignore contents)
 models/intent_classifier/*
 !models/intent_classifier/.gitkeep
+model/
 
 # Data caches and large intermediates
 data/**/.cache*/

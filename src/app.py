@@ -2,6 +2,9 @@ import streamlit as st
 import torch
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 
+# Import small talk
+from stage1_1_small_talk import generate_response
+
 # Import our Stage 2 action handler (YouTube + Spotify behavior)
 from stage2_handler_play_music import handle_music_request
 
@@ -51,11 +54,11 @@ if user_input:
     if intent == "play_music":
         reply = handle_music_request(user_input)
 
-    # Step C: Otherwise it's small talk → return general friendly reply
+    # Step C: Otherwise it's small talk → return small talk reply
     else:
-        reply = "😊 I'm here! Tell me more, or ask me to play some music."
+        reply = generate_response(user_input)
 
-    # Step D: Display response
+    # Step 😧 Display response
     # --- Display response with embedded media if possible ---
     if "youtube.com" in reply or "youtu.be" in reply:
         import re
