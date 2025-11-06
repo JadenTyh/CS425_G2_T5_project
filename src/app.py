@@ -7,6 +7,7 @@ from stage1_1_small_talk import generate_response
 
 # Import our Stage 2 action handler (YouTube + Spotify behavior)
 from stage2_handler_play_music import handle_music_request
+from stage2_handler_weather import handle_weather_request
 
 
 # --- 1. Load Trained Intent Classifier Model ---
@@ -33,9 +34,9 @@ def classify_intent(text):
 
 # --- 2. Streamlit UI Setup ---
 
-st.set_page_config(page_title="Music Chatbot", page_icon="🎵")
-st.title("🎵 Music Chatbot")
-st.write("Ask me to play music, add songs to playlists, or just chat with me!")
+st.set_page_config(page_title="Music & Weather Chatbot", page_icon="🎵")
+st.title("🎵 Music & Weather Chatbot")
+st.write("Ask me to play music, get the weather, or just chat with me!")
 
 
 # --- 3. Chat Input ---
@@ -53,6 +54,8 @@ if user_input:
     # Step B: If user wants music → call Stage 2 handler
     if intent == "play_music":
         reply = handle_music_request(user_input)
+    elif intent == "weather_query":
+        reply = handle_weather_request(user_input)
 
     # Step C: Otherwise it's small talk → return small talk reply
     else:

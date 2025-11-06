@@ -44,6 +44,8 @@ def map_intent(intent_name):
     intent_name = intent_name.lower()
     if intent_name in ["playmusic", "addtoplaylist"]:
         return "play_music"
+    elif intent_name in ["getweather"]:
+        return "weather_query"
     return "small_talk"
 
 
@@ -76,6 +78,7 @@ with open(os.path.join(OUTPUT_DIR, "intents_test.json"), "w", encoding="utf-8") 
 print("\n✅ Dataset successfully built!")
 print(f"🎵 play_music examples: {len([x for x in final_data if x['intent']=='play_music'])}")
 print(f"💬 small_talk examples: {len([x for x in final_data if x['intent']=='small_talk'])}")
+print(f"🌤️ weather_query examples: {len([x for x in final_data if x['intent']=='weather_query'])}")
 print(f"📚 Train size: {len(train_data)}")
 print(f"🧪 Test size:  {len(test_data)}")
 print(f"📁 Saved to: {OUTPUT_DIR}/intents_train.json and intents_test.json")
