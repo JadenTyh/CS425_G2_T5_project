@@ -22,8 +22,9 @@ venv/
 # Data and Results
 # Ignore everything inside the 'data' folder, but keep the folder itself 
 # tracked if you want to use '.gitkeep' to ensure the empty directory exists
-data/
+data/*
 !data/.gitkeep
+!data/small_talk_moody_teen_dataset.csv
 
 # Model artifacts (keep dir, ignore contents)
 models/intent_classifier/*
