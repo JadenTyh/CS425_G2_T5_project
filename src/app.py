@@ -19,15 +19,17 @@ from stage2_confirm import is_yes, is_no
 
 if "last_music_action" not in st.session_state:
     st.session_state.last_music_action = None
-    
+
+
 # helper function to display response
 def show_reply(reply):
     """Embed YouTube/Spotify links if present, else print text."""
-    import re
 
     # YouTube embed
     yt_match = re.search(r"(https?://\S+)", reply)
-    if yt_match and ("youtube.com" in yt_match.group(1) or "youtu.be" in yt_match.group(1)):
+    if yt_match and (
+        "youtube.com" in yt_match.group(1) or "youtu.be" in yt_match.group(1)
+    ):
         yt_link = yt_match.group(1)
         text = reply.replace(yt_link, "").strip()
         if text:
@@ -49,6 +51,7 @@ def show_reply(reply):
 
     # Default case
     st.write(reply)
+
 
 # --- 1. Load Trained Intent Classifier Model ---
 
@@ -77,27 +80,46 @@ def classify_intent(text):
 
 st.set_page_config(page_title="Music & Weather Chatbot", page_icon="🎵")
 st.title("🎵 Music & Weather Chatbot")
-st.write("Ask me to play music, get the weather, or just chat with me!")
+show_reply("Ask me to play music, get the weather, or just chat with me!")
 
 
 # --- 3. Chat Input ---
 
-user_input = st.text_input(
-    "You:", placeholder="Example: play some jazz / add this to my playlist / hello"
-)
+# --- Reset text input BEFORE drawing widget ---
+if "chat_buffer" not in st.session_state:
+    st.session_state.chat_buffer = ""  # stores last submitted message temporarily
 
+
+def store_and_clear():
+    st.session_state.chat_buffer = st.session_state.chat_input  # save message
+    st.session_state.chat_input = ""  # clear box immediately
+
+
+user_input = st.text_input(
+    "You:",
+    placeholder="Example: play some jazz / hello / play Laufey",
+    key="chat_input",
+    on_change=store_and_clear,   # ✅ store then clear
+)
 
 # --- 4. Chat Logic ---
 
-if user_input:
 
-   # --- Conversation Follow-up Handling (Yes/No to music suggestions) ---
+def run_chat():
+    user_text = st.session_state.chat_buffer.strip()
+    if not user_text:
+        return
+    
+    # RESET buffer after we capture it
+    st.session_state.chat_buffer = ""
+
+    # --- Conversation Follow-up Handling (Yes/No to music suggestions) ---
     # --- FOLLOW-UP STATE CHECK ---
     if st.session_state.last_music_action:
         last = st.session_state.last_music_action
 
         # YES
-        if is_yes(user_input):
+        if is_yes(user_text):
             st.session_state.last_music_action = None
 
             if last["action"] == "recommend_artist":
@@ -106,59 +128,61 @@ if user_input:
 
                 st.markdown(f"🔥 Playing **{artist_to_play}** now!")
                 show_reply(yt)
-                st.stop()  # <- STOP EVERYTHING HERE ✅
+                return  # <- STOP EVERYTHING HERE
 
             elif last["action"] in ["recommend_genre", "play_mood"]:
                 genre = last["genre"]
                 reply = play_from_genre(genre)
 
-                st.write(reply)
-                st.stop()  # <- ALSO STOP HERE ✅
+                show_reply(reply)
+                return  # <- ALSO STOP HERE
 
         # NO
-        elif is_no(user_input):
+        elif is_no(user_text):
             st.session_state.last_music_action = None
-            st.write("No problem! Let me know if you want another recommendation 🎧")
-            st.stop()
-
+            show_reply("No problem! Let me know if you want another recommendation 🎧")
+            return
 
     # a) Determine user intent using classifier (Stage 1)
-    intent = classify_intent(user_input)
+    intent = classify_intent(user_text)
 
     # b) If user wants music → call Stage 2 handler
     if intent == "play_music":
         if intent == "play_music":
-            sub = classify_music_request(user_input)
+            sub = classify_music_request(user_text)
             print(f"[DEBUG] Sub-intent detected: {sub}")
             if sub == "play_track":
-                reply = handle_music_request(user_input, sub)
+                reply = handle_music_request(user_text, sub)
 
             elif sub == "recommend_genre":
                 # will return a YouTube/Spotify list
-                reply = recommend_genre_playlist(user_input)
+                reply = recommend_genre_playlist(user_text)
                 if "Shall I play" in reply:
                     for genre in GENRE_TO_ARTISTS.keys():
-                        if genre in user_input.lower():
+                        if genre in user_text.lower():
                             st.session_state["pending_genre"] = genre
 
             elif sub == "recommend_artist":
-                reply = recommend_artist_mix(user_input)
+                reply = recommend_artist_mix(user_text)
 
             elif sub == "play_mood":
-                reply = recommend_mood_playlist(user_input)
+                reply = recommend_mood_playlist(user_text)
 
             else:
-                reply = handle_music_request(user_input)  # safe fallback
+                reply = handle_music_request(user_user_textinput)  # safe fallback
 
     # c) or it's weather
     elif intent == "weather_query":
-        reply = handle_weather_request(user_input)
+        reply = handle_weather_request(user_text)
 
     # d) Otherwise it's small talk → return small talk reply
     else:
-        reply = generate_response(user_input)
+        reply = generate_response(user_text)
 
     # e) Display response
     # --- Display response with embedded media if possible ---
     show_reply(reply)
+    return
 
+
+run_chat()
