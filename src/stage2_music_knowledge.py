@@ -58,6 +58,10 @@ GENRE_PLAYLISTS = {
     "city pop": [
         "city pop classics", "japanese city pop night drive", "retro asian pop vibes",
         "future funk mix", "vaporwave city pop remix", "nostalgic summer city pop"
+    ],
+    "jazz":[
+        "smooth jazz cafe", "late night jazz", "cozy coffee shop jazz", 
+        "jazz for reading", "jazz guitar instrumental"
     ]
 }
 
@@ -156,6 +160,12 @@ GENRE_TO_ARTISTS = {
     "hype": [
         "Travis Scott","21 Savage","Don Toliver","Drake","Central Cee","Lil Uzi Vert","Dua Lipa","Doja Cat",
         "Stray Kids","SEVENTEEN","BLACKPINK","The Weeknd","Skrillex","David Guetta"
+    ],
+    "jazz":[
+        "Chet Baker", "Miles Davis", "John Coltrane", "Bill Evans", "Ella Fitzgerald",
+        "Louis Armstrong", "Stan Getz", "Nina Simone", "Duke Ellington",
+        "Charles Mingus", "Sonny Rollins", "Wes Montgomery", "Thelonious Monk",
+        "Diana Krall", "Norah Jones", "Melody Gardot", "Madeleine Peyroux"
     ]
 }
 
