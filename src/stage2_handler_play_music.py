@@ -1,6 +1,8 @@
 import re
 import subprocess
 import random
+import streamlit as st
+
 from typing import Optional
 
 # --- 1. Regex for direct music links ---
@@ -38,7 +40,7 @@ def youtube_search(query: str) -> Optional[str]:
         return None
 
 
-# --- 3. NEW Recommendation Helpers ---
+# --- 3. Recommendation Helpers ---
 
 # Genre → Example playlists (YouTube)
 GENRE_PLAYLISTS = {
@@ -153,34 +155,95 @@ MOOD_TO_GENRE = {
     "gym": "rock",
 }
 
+import re
+
+def extract_artist_name(text):
+    """
+    Attempts to detect an artist name in user input by fuzzy scanning.
+    Returns the matched artist string or None.
+    """
+    text_lower = text.lower()
+
+    for group in GENRE_TO_ARTISTS.values():
+        for artist in group:
+            if artist.lower() in text_lower:
+                return artist
+    
+    # fallback: uppercase words that look like names
+    candidates = re.findall(r"[A-Z][a-z]+(?:\s[A-Z][a-z]+)*", text)
+    return candidates[0] if candidates else None
+
+def find_similar_artists(artist):
+    """
+    Returns similar artists. Handles None safely.
+    """
+    # No artist detected
+    if not artist:
+        return ["Laufey", "Phoebe Bridgers", "The 1975"]   # safe fallback recs
+
+    artist_lower = artist.lower()
+
+    for group_name, artist_list in GENRE_TO_ARTISTS.items():
+        for a in artist_list:
+            if a.lower() == artist_lower:
+                recs = [x for x in artist_list if x.lower() != artist_lower]
+                return recs[:3]
+
+    # fallback if artist exists but not in our groups
+    return ["Laufey", "Men I Trust", "Clairo"]
+
+
 
 def recommend_genre_playlist(user_text: str) -> str:
     """Ask user permission before playing a genre playlist."""
     for genre in GENRE_TO_ARTISTS:
         if genre.lower() in user_text.lower():
+            st.session_state.last_music_action = {
+                "pending": True,
+                "action": "recommend_genre",
+                "genre": genre,
+            }
             return f"🎶 You mentioned **{genre}** music.\nShall I play some {genre} songs?"
+
     return "I can recommend music by genre — try saying: 'recommend some indie vibes'"
 
 
-def recommend_artist_mix(user_text: str) -> str:
-    """Recommend similar artists instead of searching."""
-    for artist in SIMILAR_ARTISTS:
-        if artist.lower() in user_text.lower():
-            similar = SIMILAR_ARTISTS[artist]
-            choices = ", ".join(similar)
-            return f"If you like **{artist}**, you may also enjoy: **{choices}**.\nWant me to play some?"
-    return "Tell me the artist again — I'll recommend similar artists."
+def recommend_artist_mix(user_text):
+    artist = extract_artist_name(user_text)
+    suggestions = find_similar_artists(artist)
 
+    # Determine genre for future playback
+    genre = None
+    for g, artists in GENRE_TO_ARTISTS.items():
+        if artist in artists:
+            genre = g
+            break
 
-def recommend_mood_playlist(user_text: str) -> str:
-    """Recommend based on mood → genre → artist."""
+    st.session_state.last_music_action = {
+        "action": "recommend_artist",
+        "artist": artist,
+        "suggested": suggestions,
+        "genre": genre  # store genre for follow-up
+    }
+
+    return f"If you like **{artist}**, you may also enjoy: {', '.join(suggestions)}.\nWant me to play one?"
+
+def recommend_mood_playlist(user_text):
     for mood in MOOD_TO_GENRE:
         if mood in user_text.lower():
             genre = MOOD_TO_GENRE[mood]
+
+            st.session_state.last_music_action = {
+                "action": "play_mood",
+                "genre": genre
+            }
+
             artists = GENRE_TO_ARTISTS.get(genre, [])
-            artist = artists[0] if artists else "some music"
-            return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I start with **{artist}**?"
+            sample = artists[0] if artists else "something good"
+            return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I start with **{sample}**?"
+
     return "Tell me how you're feeling — sad, chill, hype, romantic, etc."
+
 
 def play_from_genre(genre: str) -> str:
     """Pick a random artist and return a YouTube link."""

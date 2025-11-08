@@ -1,22 +1,54 @@
 import streamlit as st
 import torch
+import re
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 
-# Import small talk
-from stage2_small_talk import generate_response
-
 # Import our Stage 2 models
+from stage2_small_talk import generate_response
 from stage2_handler_play_music import (
     handle_music_request,
     recommend_genre_playlist,
     recommend_artist_mix,
     recommend_mood_playlist,
     play_from_genre,
-    GENRE_TO_ARTISTS
+    GENRE_TO_ARTISTS,
 )
 from stage2_predict_music import classify_music_request
 from stage2_handler_weather import handle_weather_request
+from stage2_confirm import is_yes, is_no
 
+if "last_music_action" not in st.session_state:
+    st.session_state.last_music_action = None
+    
+# helper function to display response
+def show_reply(reply):
+    """Embed YouTube/Spotify links if present, else print text."""
+    import re
+
+    # YouTube embed
+    yt_match = re.search(r"(https?://\S+)", reply)
+    if yt_match and ("youtube.com" in yt_match.group(1) or "youtu.be" in yt_match.group(1)):
+        yt_link = yt_match.group(1)
+        text = reply.replace(yt_link, "").strip()
+        if text:
+            st.markdown(text)
+        st.video(yt_link)
+        return
+
+    # Spotify embed
+    if reply.startswith("spotify_player::"):
+        spotify_link = reply.replace("spotify_player::", "")
+        st.markdown(
+            f"""
+            <iframe src="https://open.spotify.com/embed/track/{spotify_link.split('/')[-1]}"
+            width="100%" height="152" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
+
+    # Default case
+    st.write(reply)
 
 # --- 1. Load Trained Intent Classifier Model ---
 
@@ -58,13 +90,36 @@ user_input = st.text_input(
 # --- 4. Chat Logic ---
 
 if user_input:
-    
-    if "yes" in user_input.lower() and st.session_state.get("pending_genre"):
-        genre = st.session_state["pending_genre"]
-        st.session_state["pending_genre"] = None
-        reply = play_from_genre(genre)
-        st.write(reply)
-        st.stop()
+
+   # --- Conversation Follow-up Handling (Yes/No to music suggestions) ---
+    # --- FOLLOW-UP STATE CHECK ---
+    if st.session_state.last_music_action:
+        last = st.session_state.last_music_action
+
+        # YES
+        if is_yes(user_input):
+            st.session_state.last_music_action = None
+
+            if last["action"] == "recommend_artist":
+                artist_to_play = last["suggested"][0]
+                yt = handle_music_request(artist_to_play, sub_intent="play_track")
+
+                st.markdown(f"🔥 Playing **{artist_to_play}** now!")
+                show_reply(yt)
+                st.stop()  # <- STOP EVERYTHING HERE ✅
+
+            elif last["action"] in ["recommend_genre", "play_mood"]:
+                genre = last["genre"]
+                reply = play_from_genre(genre)
+
+                st.write(reply)
+                st.stop()  # <- ALSO STOP HERE ✅
+
+        # NO
+        elif is_no(user_input):
+            st.session_state.last_music_action = None
+            st.write("No problem! Let me know if you want another recommendation 🎧")
+            st.stop()
 
 
     # a) Determine user intent using classifier (Stage 1)
@@ -86,7 +141,6 @@ if user_input:
                         if genre in user_input.lower():
                             st.session_state["pending_genre"] = genre
 
-
             elif sub == "recommend_artist":
                 reply = recommend_artist_mix(user_input)
 
@@ -96,30 +150,15 @@ if user_input:
             else:
                 reply = handle_music_request(user_input)  # safe fallback
 
+    # c) or it's weather
     elif intent == "weather_query":
         reply = handle_weather_request(user_input)
 
-    # c) Otherwise it's small talk → return small talk reply
+    # d) Otherwise it's small talk → return small talk reply
     else:
         reply = generate_response(user_input)
 
-    # d) Display response
+    # e) Display response
     # --- Display response with embedded media if possible ---
-    if "youtube.com" in reply or "youtu.be" in reply:
-        import re
+    show_reply(reply)
 
-        yt_link = re.search(r"https?://\S+", reply).group(0)
-        st.video(yt_link)
-
-    elif reply.startswith("spotify_player::"):
-        spotify_link = reply.replace("spotify_player::", "")
-        st.markdown(
-            f"""
-            <iframe src="https://open.spotify.com/embed/track/{spotify_link.split('/')[-1]}" 
-            width="100%" height="152" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    else:
-        st.write(reply)
