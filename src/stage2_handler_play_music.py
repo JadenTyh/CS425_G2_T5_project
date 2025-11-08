@@ -63,24 +63,25 @@ def extract_artist_name(text):
     candidates = re.findall(r"[A-Z][a-z]+(?:\s[A-Z][a-z]+)*", text)
     return candidates[0] if candidates else None
 
-def find_similar_artists(artist):
-    """
-    Returns similar artists. Handles None safely.
-    """
-    # No artist detected
+def find_similar_artists(artist: str):
     if not artist:
-        return ["Laufey", "Phoebe Bridgers", "The 1975"]   # safe fallback recs
+        return random.sample(GENRE_TO_ARTISTS["indie"], 3)
 
+    # Direct similarity map
+    if artist in SIMILAR_ARTISTS:
+        return SIMILAR_ARTISTS[artist][:3]
+
+    # Genre-based fallback
     artist_lower = artist.lower()
+    for genre, artist_list in GENRE_TO_ARTISTS.items():
+        if any(a.lower() == artist_lower for a in artist_list):
+            others = [a for a in artist_list if a.lower() != artist_lower]
+            return random.sample(others, 3) if len(others) >= 3 else others
 
-    for group_name, artist_list in GENRE_TO_ARTISTS.items():
-        for a in artist_list:
-            if a.lower() == artist_lower:
-                recs = [x for x in artist_list if x.lower() != artist_lower]
-                return recs[:3]
+    # Last resort safe fallback (soft chill artists)
+    fallback = ["Laufey", "Faye Webster", "Clairo", "Men I Trust", "Rex Orange County"]
+    return random.sample(fallback, 3)
 
-    # fallback if artist exists but not in our groups
-    return ["Laufey", "Men I Trust", "Clairo"]
 
 
 
