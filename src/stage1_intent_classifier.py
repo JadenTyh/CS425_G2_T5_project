@@ -119,4 +119,4 @@ if __name__ == "__main__":
     trainer.save_model(MODEL_DIR)
     tokenizer.save_pretrained(MODEL_DIR)
 
-    print(f"\n✅ Model and tokenizer saved to {MODEL_DIR}")
+    print(f"\nModel and tokenizer saved to {MODEL_DIR}")
