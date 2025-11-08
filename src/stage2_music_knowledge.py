@@ -152,8 +152,27 @@ GENRE_TO_ARTISTS = {
 
     # --- CHILL / ROMANTIC / LATE NIGHT (CROSS-GENRE) ---
     "chill": [
-        "Joji","Laufey","Cigarettes After Sex","Daniel Caesar","Rex Orange County","Faye Webster",
-        "Khalid","Raveena","Sufjan Stevens","Kacey Musgraves","Clairo","Men I Trust"
+        # Dreamy / Quiet Indie
+        "Laufey", "Faye Webster", "Lizzy McAlpine", "Phoebe Bridgers", "Lucy Dacus", 
+        "Julien Baker", "Sufjan Stevens", "Mitski", "Beabadoobee", "Soccer Mommy",
+        "Billie Marten", "Skullcrusher", "Snail Mail", "Adrianne Lenker", "Leith Ross",
+        "Haley Heynderickx", "Big Thief", "Anna Mieke", "Angelo De Augustine",
+
+        # Soft Alt / Indie Pop
+        "Men I Trust", "Clairo", "Japanese Breakfast", "Peach Pit", "Wallows",
+        "Still Woozy", "Dayglow", "Gus Dapperton", "Rex Orange County",
+        "Hippo Campus", "Dreamer Boy", "Wet", "Arlo Parks", "Girl in Red",
+        "Bea Miller", "Cults", "Tessa Violet", "mxmtoon",
+
+        # Romantic Jazz / Neo-Soul
+        "Daniel Caesar", "Frank Ocean", "Steve Lacy", "Cleo Sol", "Leon Bridges",
+        "H.E.R.", "Giveon", "Summer Walker", "Jhené Aiko", "Brent Faiyaz",
+        "Conan Gray", "Omar Apollo", "Cautious Clay", "Raveena", "Kali Uchis",
+
+        # Chillwave / Vibe Electronic
+        "Joji", "Cigarettes After Sex", "The xx", "Beach House", "Lana Del Rey",
+        "Rhye", "Washed Out", "M83", "Mild High Club", "Crumb",
+        "Mac DeMarco", "LANY", "Glass Animals", "The Japanese House"
     ],
 
     # --- GYM / HYPE / ENERGY ---
