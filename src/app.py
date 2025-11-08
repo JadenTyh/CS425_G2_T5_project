@@ -3,7 +3,7 @@ import torch
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 
 # Import small talk
-from stage1_1_small_talk import generate_response
+from stage2_small_talk import generate_response
 
 # Import our Stage 2 action handler (YouTube + Spotify behavior)
 from stage2_handler_play_music import handle_music_request
@@ -48,20 +48,20 @@ user_input = st.text_input("You:", placeholder="Example: play some jazz / add th
 
 if user_input:
 
-    # Step 1: Determine user intent using classifier (Stage 1)
+    # a) Determine user intent using classifier (Stage 1)
     intent = classify_intent(user_input)
 
-    # Step 2: If user wants music → call Stage 2 handler
+    # b) If user wants music → call Stage 2 handler
     if intent == "play_music":
         reply = handle_music_request(user_input)
     elif intent == "weather_query":
         reply = handle_weather_request(user_input)
 
-    # Step 3: Otherwise it's small talk → return small talk reply
+    # c) Otherwise it's small talk → return small talk reply
     else:
         reply = generate_response(user_input)
 
-    # Step 4: Display response
+    # d) Display response
     # --- Display response with embedded media if possible ---
     if "youtube.com" in reply or "youtu.be" in reply:
         import re
