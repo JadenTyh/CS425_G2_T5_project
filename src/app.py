@@ -48,20 +48,20 @@ user_input = st.text_input("You:", placeholder="Example: play some jazz / add th
 
 if user_input:
 
-    # Step A: Determine user intent using classifier (Stage 1)
+    # Step 1: Determine user intent using classifier (Stage 1)
     intent = classify_intent(user_input)
 
-    # Step B: If user wants music → call Stage 2 handler
+    # Step 2: If user wants music → call Stage 2 handler
     if intent == "play_music":
         reply = handle_music_request(user_input)
     elif intent == "weather_query":
         reply = handle_weather_request(user_input)
 
-    # Step C: Otherwise it's small talk → return small talk reply
+    # Step 3: Otherwise it's small talk → return small talk reply
     else:
         reply = generate_response(user_input)
 
-    # Step 😧 Display response
+    # Step 4: Display response
     # --- Display response with embedded media if possible ---
     if "youtube.com" in reply or "youtu.be" in reply:
         import re
