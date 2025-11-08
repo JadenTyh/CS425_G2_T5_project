@@ -59,7 +59,7 @@ for filepath in filepaths:
     intent_samples = load_json_file(filepath)
     all_data.extend(intent_samples)
 
-print(f"\n📦 Total raw examples loaded: {len(all_data)}")
+print(f"\nTotal raw examples loaded: {len(all_data)}")
 
 
 # Apply label mapping
@@ -75,10 +75,10 @@ with open(os.path.join(OUTPUT_DIR, "intents_train.json"), "w", encoding="utf-8")
 with open(os.path.join(OUTPUT_DIR, "intents_test.json"), "w", encoding="utf-8") as f:
     json.dump(test_data, f, indent=4)
 
-print("\n✅ Dataset successfully built!")
-print(f"🎵 play_music examples: {len([x for x in final_data if x['intent']=='play_music'])}")
-print(f"💬 small_talk examples: {len([x for x in final_data if x['intent']=='small_talk'])}")
-print(f"🌤️ weather_query examples: {len([x for x in final_data if x['intent']=='weather_query'])}")
-print(f"📚 Train size: {len(train_data)}")
-print(f"🧪 Test size:  {len(test_data)}")
-print(f"📁 Saved to: {OUTPUT_DIR}/intents_train.json and intents_test.json")
+print("\nDataset successfully built!")
+print(f"play_music examples: {len([x for x in final_data if x['intent']=='play_music'])}")
+print(f"small_talk examples: {len([x for x in final_data if x['intent']=='small_talk'])}")
+print(f"weather_query examples: {len([x for x in final_data if x['intent']=='weather_query'])}")
+print(f"Train size: {len(train_data)}")
+print(f"Test size:  {len(test_data)}")
+print(f"Saved to: {OUTPUT_DIR}/intents_train.json and intents_test.json")
