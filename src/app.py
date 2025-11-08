@@ -1,6 +1,7 @@
 import streamlit as st
 import torch
 import re
+import random
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 
 # Import our Stage 2 models
@@ -19,6 +20,11 @@ from stage2_confirm import is_yes, is_no
 
 if "last_music_action" not in st.session_state:
     st.session_state.last_music_action = None
+
+
+# helper function to randomize text response
+def choose(*options):
+    return random.choice(options)
 
 
 # helper function to display response
@@ -80,7 +86,14 @@ def classify_intent(text):
 
 st.set_page_config(page_title="Music & Weather Chatbot", page_icon="🎵")
 st.title("🎵 Music & Weather Chatbot")
-show_reply("Ask me to play music, get the weather, or just chat with me!")
+show_reply(
+    choose(
+        "Yeah, I'm here. Ask for music, weather, whatever.",
+        "What do you want? Music? Weather? Small talk? Cool.",
+        "I'm awake. Barely. What do you need.",
+        "Sure. I can play music or whatever. Just say it.",
+    )
+)
 
 
 # --- 3. Chat Input ---
@@ -99,7 +112,7 @@ user_input = st.text_input(
     "You:",
     placeholder="Example: play some jazz / hello / play Laufey",
     key="chat_input",
-    on_change=store_and_clear,   # ✅ store then clear
+    on_change=store_and_clear,  # ✅ store then clear
 )
 
 # --- 4. Chat Logic ---
@@ -109,7 +122,7 @@ def run_chat():
     user_text = st.session_state.chat_buffer.strip()
     if not user_text:
         return
-    
+
     # RESET buffer after we capture it
     st.session_state.chat_buffer = ""
 
@@ -128,7 +141,7 @@ def run_chat():
         # YES
         if is_yes(user_text):
             st.session_state.last_music_action = None
-            
+
             # If mood recommendation follow-up
             if last["action"] == "play_mood":
                 artist = last.get("artist")
@@ -136,7 +149,15 @@ def run_chat():
 
                 if artist:
                     yt = handle_music_request(artist, sub_intent="play_track")
-                    st.markdown(f"🌙 Starting **{genre}** vibes with **{artist}**...")
+                    st.markdown(
+                        choose(
+                            f"Playing **{artist}**. I guess.",
+                            f"Okay. **{artist}**. Sure.",
+                            f"Fine. Here's **{artist}**.",
+                            f"Alright, **{artist}**. Don't say I never do anything.",
+                            f"Cool. **{artist}** is on. Chill or whatever.",
+                        )
+                    )
                     show_reply(yt)
                 else:
                     # fallback: play random from genre
@@ -148,13 +169,27 @@ def run_chat():
 
             # If artist recommendation follow-up
             if last["action"] == "recommend_artist":
-                artist_to_play = last["suggested"][0]
+                artist = (
+                    last.get("artist") or last["suggested"][0]
+                )  # name user asked about
+                suggestions = last.get("suggested", [])
+
+                # pick something to play
+                artist_to_play = suggestions[0] if suggestions else artist
                 yt = handle_music_request(artist_to_play, sub_intent="play_track")
 
-                st.markdown(f"🔥 Playing **{artist_to_play}** now!")
+                st.markdown(
+                    choose(
+                        f"If you're into **{artist}**, maybe try {', '.join(suggestions)}. Want one or not?",
+                        f"Okay so **{artist}**. People also listen to {', '.join(suggestions)}. Should I play something?",
+                        f"Whatever, here's some similar artists: {', '.join(suggestions)}. Want me to start?",
+                        f"Cool taste. {', '.join(suggestions)} are kinda close. Play?",
+                        f"Fine. Try {', '.join(suggestions)} I guess. Should I play one?",
+                    )
+                )
                 show_reply(yt)
-                return  # <- STOP EVERYTHING HERE
-            
+                return
+
             # If genre recommendation follow-up
             elif last["action"] == "recommend_genre":
                 genre = last["genre"]
@@ -165,7 +200,16 @@ def run_chat():
         # NO
         elif is_no(user_text):
             st.session_state.last_music_action = None
-            show_reply("No problem! Let me know if you want another recommendation 🎧")
+            show_reply(
+                choose(
+                    "Okay then.",
+                    "Cool. No problem.",
+                    "Sure. Whatever you want.",
+                    "Alright, don't worry about it.",
+                    "Yeah that's fine.",
+                )
+            )
+
             return
 
     # a) Determine user intent using classifier (Stage 1)

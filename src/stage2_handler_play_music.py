@@ -2,20 +2,19 @@ import re
 import subprocess
 import random
 import streamlit as st
-import random
 from stage2_music_knowledge import GENRE_TO_ARTISTS, SIMILAR_ARTISTS, MOOD_TO_GENRE
-
+from random import choice as choose
 from typing import Optional
 
 # --- 1. Regex for direct music links ---
 SPOTIFY_RE = re.compile(
     r"https?://open\.spotify\.com/(track|album|playlist|episode)/[A-Za-z0-9]+(?:\?[^\s]+)?",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 YOUTUBE_RE = re.compile(
     r"https?://(?:www\.)?(?:youtube\.com/watch\?v=[A-Za-z0-9_\-]+|youtu\.be/[A-Za-z0-9_\-]+)",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 
@@ -31,22 +30,29 @@ def extract_youtube_link(text: str) -> Optional[str]:
 
 
 def youtube_search(query: str) -> Optional[str]:
-    """Search YouTube and return the top video result URL."""
+    """
+    Search YouTube for likely MUSIC, not interviews or unrelated videos.
+    """
+    # Tell YouTube what we want explicitly
+    clean_query = f"{query} official audio OR lyrics OR topic -live"
+    
     try:
         video_id = subprocess.check_output(
-            ["yt-dlp", f"ytsearch1:{query}", "--get-id"],
+            ["yt-dlp", f"ytsearch1:{clean_query}", "--get-id"],
             stderr=subprocess.DEVNULL
         ).decode().strip()
+
+        print(f"[YT SEARCH] Query Used: {clean_query}")  # Debug print
+
         return f"https://www.youtube.com/watch?v={video_id}"
-    except Exception:
+    except Exception as e:
+        print("[YT SEARCH ERROR]", e)
         return None
+
 
 
 # --- 3. Recommendation Helpers ---
 
-
-
-import re
 
 def extract_artist_name(text):
     """
@@ -59,10 +65,11 @@ def extract_artist_name(text):
         for artist in group:
             if artist.lower() in text_lower:
                 return artist
-    
+
     # fallback: uppercase words that look like names
     candidates = re.findall(r"[A-Z][a-z]+(?:\s[A-Z][a-z]+)*", text)
     return candidates[0] if candidates else None
+
 
 def find_similar_artists(artist: str):
     if not artist:
@@ -84,8 +91,6 @@ def find_similar_artists(artist: str):
     return random.sample(fallback, 3)
 
 
-
-
 def recommend_genre_playlist(user_text: str) -> str:
     """Ask user permission before playing a genre playlist."""
     for genre in GENRE_TO_ARTISTS:
@@ -95,9 +100,27 @@ def recommend_genre_playlist(user_text: str) -> str:
                 "action": "recommend_genre",
                 "genre": genre,
             }
-            return f"🎶 You mentioned **{genre}** music.\nShall I play some {genre} songs?"
+            return choose(
+                [
+                    f"So you want **{genre}** vibes. Cool, I guess.\nWant me to play some?",
+                    f"Alright, **{genre}**. I can put something on… if you *insist*.\nSay yes or whatever.",
+                    f"**{genre}** huh. Should I start something or are we just thinking about it?",
+                    f"yeah sure, **{genre}**. I can play a playlist.\nDo you want that or nah?",
+                    f"if you want **{genre}** stuff, I can queue it.\nJust say 'yes' I guess.",
+                    f"Okay. **{genre}** music. Should I actually play some?",
+                    f"mm. **{genre}**. I can start something… but only if you really want.",
+                ]
+            )
 
-    return "I can recommend music by genre — try saying: 'recommend some indie vibes'"
+    return choose(
+        [
+            "You can tell me a genre, you know.",
+            "idk what genre you're talking about. try again.",
+            "huh? just say 'indie', 'lofi', 'pop' or something.",
+            "I can't read your mind dude, say a real genre.",
+            "just… say the genre. please.",
+        ]
+    )
 
 
 def recommend_artist_mix(user_text):
@@ -115,10 +138,21 @@ def recommend_artist_mix(user_text):
         "action": "recommend_artist",
         "artist": artist,
         "suggested": suggestions,
-        "genre": genre  # store genre for follow-up
+        "genre": genre,  # store genre for follow-up
     }
 
-    return f"If you like **{artist}**, you may also enjoy: {', '.join(suggestions)}.\nWant me to play one?"
+    return choose(
+        [
+            f"So you listen to **{artist}**, huh. Try {', '.join(suggestions)} or whatever.\nWanna play one?",
+            f"Alright, if you're into **{artist}**, people also go for {', '.join(suggestions)}.\nShould I play something or nah?",
+            f"Cool taste, I guess. {', '.join(suggestions)} are kinda the same vibe.\nWant me to start some music?",
+            f"Yeah okay, **{artist}** fans usually listen to {', '.join(suggestions)}.\nI can play one… if you *really* want.",
+            f"mm. **{artist}**. fine. try {', '.join(suggestions)}.\nShould I actually play one or are we just talking?",
+            f"I mean, sure. {', '.join(suggestions)} are similar.\nSay 'yes' if you want me to hit play.",
+            f"Right. If you like **{artist}**, then {', '.join(suggestions)} makes sense.\nWant me to cue one up?",
+        ]
+    )
+
 
 def recommend_mood_playlist(user_text):
     for mood in MOOD_TO_GENRE:
@@ -131,52 +165,105 @@ def recommend_mood_playlist(user_text):
             st.session_state.last_music_action = {
                 "action": "play_mood",
                 "genre": genre,
-                "artist": sample
+                "artist": sample,
             }
 
             if sample:
-                return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I start with **{sample}**?"
+                return choose(
+                    [
+                        f"so you're feeling **{mood}**... fine. **{genre}** kinda fits.\nWant me to play **{sample}** or whatever?",
+                        f"**{mood}** mood huh. guess **{genre}** works.\nshould i start **{sample}** or nah?",
+                        f"okay. **{genre}** for **{mood}** vibes.\nwant me to play **{sample}**?",
+                        f"yeah yeah, **{mood}**. i'll pick **{genre}**.\n**{sample}** first? say 'yes' if you care.",
+                        f"alright bro. **{mood}** = **{genre}**.\nyou want **{sample}** or should i pretend you didn't say anything?",
+                        f"fine. i'll go **{genre}**. **{sample}** is right there.\nwant it or no?",
+                        f"cool mood i guess. starting with **{sample}**... but only if you actually want it. say yes.",
+                    ]
+                )
             else:
-                return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I pick something to start?"
+                return choose(
+                    [
+                        f"**{mood}** vibes means **{genre}**, normally.\nwant me to just pick something?",
+                        f"idk man, **{genre}** works for **{mood}**.\nshould i choose a track or what?",
+                        f"**{mood}** mood detected. **{genre}** time.\nyou want me to pick something? yes/no.",
+                        f"i can start something in **{genre}** if you want.\njust say yes i guess.",
+                        f"alright bro. **{genre}** fits.\nwanna let me choose the first song or nah?",
+                    ]
+                )
 
-    # ✅ No mood found → ask the user *and store that the bot expects a mood*
+    #  No mood found → ask the user *and store that the bot expects a mood*
     st.session_state.last_music_action = {
-        "action": "ask_mood"   # <--- new follow-up state
+        "action": "ask_mood"  # <--- new follow-up state
     }
     return "Sure — how are you feeling? (sad / chill / hype / romantic / gym / study)"
 
 
-
-
 def play_from_genre(genre: str) -> str:
-    """Pick a random artist and return an embedded YouTube link."""
+    """Pick a random artist and return an embedded YouTube link (teenager edition)."""
     import random
 
     artists = GENRE_TO_ARTISTS.get(genre, [])
     if not artists:
-        return "I don't have enough artists in that genre yet."
+        return choose(
+            [
+                "idk dude, I barely even know that genre.",
+                "no clue who even makes music in that genre.",
+                "bro that genre is like... empty in my brain.",
+                "can't play something that doesn't exist lol",
+                "ask me for literally any other genre.",
+            ]
+        )
 
     chosen = random.choice(artists)
     yt = youtube_search(f"{chosen} music")
 
-    # Return separate text and link (embedding handled by UI)
     if yt:
-        return f"🔥 Starting {genre} vibes with **{chosen}**!\n{yt}"
+        return choose(
+            [
+                f"fine. **{chosen}** is kinda {genre} or whatever.\n{yt}",
+                f"okay starting some **{genre}** stuff.\n**{chosen}**. don't say I never do anything.\n{yt}",
+                f"here. **{chosen}**. it's **{genre}** vibes.\njust listen I guess.\n{yt}",
+                f"starting **{genre}** with **{chosen}**.\ntry not to skip it instantly.\n{yt}",
+                f"cool. **{chosen}** in **{genre}** lane.\npress play or don't idc.\n{yt}",
+            ]
+        )
     else:
-        return f"Couldn't find a track for {chosen} right now."
-
+        return choose(
+            [
+                f"couldn’t find anything for **{chosen}**. shocking.",
+                f"youtube is being weird. **{chosen}** is hiding.",
+                f"bruh. the universe said no to **{chosen}** today.",
+                f"yeah so... no track for **{chosen}** right now. unlucky.",
+                f"my bad. music void. try again or something.",
+            ]
+        )
 
 
 # --- 4. Main Music Intent Handler ---
 
-def handle_music_request(user_text: str, sub_intent: str = "play_track") -> str:
-    
-    # Direct links
-    if extract_spotify_link(user_text):
-        return f"Playing on Spotify:\n{extract_spotify_link(user_text)}"
 
-    if extract_youtube_link(user_text):
-        return f"Playing via YouTube:\n{extract_youtube_link(user_text)}"
+def handle_music_request(user_text: str, sub_intent: str = "play_track") -> str:
+
+    # Direct links
+    spotify = extract_spotify_link(user_text)
+    if spotify:
+        return choose([
+            f"cool. spotify link. playing it or whatever:\n{spotify}",
+            f"yeah yeah spotify. here:\n{spotify}",
+            f"fine. opening spotify. happy now?\n{spotify}",
+            f"if you insist on spotify:\n{spotify}",
+            f"here. spotify. I literally do not care:\n{spotify}",
+        ])
+
+    youtube = extract_youtube_link(user_text)
+    if youtube:
+        return choose([
+            f"youtube link detected. pressing play:\n{youtube}",
+            f"oh wow a youtube link. crazy. here:\n{youtube}",
+            f"fine. youtube time:\n{youtube}",
+            f"okay sure, youtube:\n{youtube}",
+            f"here's your youtube thing:\n{youtube}",
+        ])
 
     # Sub-intent routing
     if sub_intent == "recommend_genre":
@@ -188,9 +275,22 @@ def handle_music_request(user_text: str, sub_intent: str = "play_track") -> str:
     if sub_intent == "play_mood":
         return recommend_mood_playlist(user_text)
 
-    # Default: treat text as a track search
+    # Default: treat input as a track search
     result = youtube_search(user_text)
     if result:
-        return f"Found on YouTube:\n{result}"
+        return choose([
+            f"found something on youtube I guess:\n{result}",
+            f"here, this came up first. don't blame me:\n{result}",
+            f"alright. this is probably what you meant:\n{result}",
+            f"okay okay chill. playing this:\n{result}",
+            f"here. music. enjoy or whatever:\n{result}",
+        ])
 
-    return "Hmm, I couldn't find that track — try giving me an artist or a lyric."
+    return choose([
+        "bro I cannot find that. say it like a normal person.",
+        "nothing came up. tragic.",
+        "idk what song that is. try again but like… clearer.",
+        "search results: zero. vibe: dead.",
+        "nope. I got nothing. rephrase maybe?",
+    ])
+
