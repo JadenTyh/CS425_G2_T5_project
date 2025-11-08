@@ -117,11 +117,36 @@ def run_chat():
     # --- FOLLOW-UP STATE CHECK ---
     if st.session_state.last_music_action:
         last = st.session_state.last_music_action
+        # for asking mood
+        if last["action"] == "ask_mood":
+            # If user responds with a mood, re-run mood recommend on it
+            mood_guess = recommend_mood_playlist(user_text)
+            st.session_state.last_music_action = None
+            show_reply(mood_guess)
+            return
 
         # YES
         if is_yes(user_text):
             st.session_state.last_music_action = None
+            
+            # If mood recommendation follow-up
+            if last["action"] == "play_mood":
+                artist = last.get("artist")
+                genre = last.get("genre")
 
+                if artist:
+                    yt = handle_music_request(artist, sub_intent="play_track")
+                    st.markdown(f"🌙 Starting **{genre}** vibes with **{artist}**...")
+                    show_reply(yt)
+                else:
+                    # fallback: play random from genre
+                    reply = play_from_genre(genre)
+                    show_reply(reply)
+
+                st.session_state.last_music_action = None
+                return
+
+            # If artist recommendation follow-up
             if last["action"] == "recommend_artist":
                 artist_to_play = last["suggested"][0]
                 yt = handle_music_request(artist_to_play, sub_intent="play_track")
@@ -129,13 +154,13 @@ def run_chat():
                 st.markdown(f"🔥 Playing **{artist_to_play}** now!")
                 show_reply(yt)
                 return  # <- STOP EVERYTHING HERE
-
-            elif last["action"] in ["recommend_genre", "play_mood"]:
+            
+            # If genre recommendation follow-up
+            elif last["action"] == "recommend_genre":
                 genre = last["genre"]
                 reply = play_from_genre(genre)
-
                 show_reply(reply)
-                return  # <- ALSO STOP HERE
+                return
 
         # NO
         elif is_no(user_text):

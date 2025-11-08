@@ -2,6 +2,7 @@ import re
 import subprocess
 import random
 import streamlit as st
+import random
 from stage2_music_knowledge import GENRE_TO_ARTISTS, SIMILAR_ARTISTS, MOOD_TO_GENRE
 
 from typing import Optional
@@ -124,16 +125,27 @@ def recommend_mood_playlist(user_text):
         if mood in user_text.lower():
             genre = MOOD_TO_GENRE[mood]
 
+            artists = GENRE_TO_ARTISTS.get(genre, [])
+            sample = random.choice(artists) if artists else None
+
             st.session_state.last_music_action = {
                 "action": "play_mood",
-                "genre": genre
+                "genre": genre,
+                "artist": sample
             }
 
-            artists = GENRE_TO_ARTISTS.get(genre, [])
-            sample = artists[0] if artists else "something good"
-            return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I start with **{sample}**?"
+            if sample:
+                return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I start with **{sample}**?"
+            else:
+                return f"🌙 For **{mood}** vibes, I recommend **{genre}**.\nShall I pick something to start?"
 
-    return "Tell me how you're feeling — sad, chill, hype, romantic, etc."
+    # ✅ No mood found → ask the user *and store that the bot expects a mood*
+    st.session_state.last_music_action = {
+        "action": "ask_mood"   # <--- new follow-up state
+    }
+    return "Sure — how are you feeling? (sad / chill / hype / romantic / gym / study)"
+
+
 
 
 def play_from_genre(genre: str) -> str:
