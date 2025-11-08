@@ -22,7 +22,6 @@ venv/
 # Data and Results
 # Ignore everything inside the 'data' folder, but keep the folder itself 
 # tracked if you want to use '.gitkeep' to ensure the empty directory exists
-data/*
 !data/.gitkeep
 !data/small_talk_moody_teen_dataset.csv
 
@@ -47,23 +46,5 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
-models/small_talk/checkpoint-5625/model.safetensors
-models/small_talk/checkpoint-5625/config.json
-models/small_talk/checkpoint-5625/generation_config.json
-models/small_talk/checkpoint-5625/merges.txt
-models/small_talk/checkpoint-5625/optimizer.pt
-models/small_talk/checkpoint-5625/rng_state.pth
-models/small_talk/checkpoint-5625/scaler.pt
-models/small_talk/checkpoint-5625/scheduler.pt
-models/small_talk/checkpoint-5625/special_tokens_map.json
-models/small_talk/checkpoint-5625/tokenizer_config.json
-models/small_talk/checkpoint-5625/trainer_state.json
-models/small_talk/checkpoint-5625/training_args.bin
-models/small_talk/checkpoint-5625/vocab.json
-models/small_talk/config.json
-models/small_talk/generation_config.json
-models/small_talk/merges.txt
-models/small_talk/model.safetensors
-models/small_talk/special_tokens_map.json
-models/small_talk/tokenizer_config.json
-models/small_talk/vocab.json
+models/*
+music_results/*
