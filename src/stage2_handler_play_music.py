@@ -35,12 +35,16 @@ def youtube_search(query: str) -> Optional[str]:
     """
     # Tell YouTube what we want explicitly
     clean_query = f"{query} official audio OR lyrics OR topic -live"
-    
+
     try:
-        video_id = subprocess.check_output(
-            ["yt-dlp", f"ytsearch1:{clean_query}", "--get-id"],
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
+        video_id = (
+            subprocess.check_output(
+                ["yt-dlp", f"ytsearch1:{clean_query}", "--get-id"],
+                stderr=subprocess.DEVNULL,
+            )
+            .decode()
+            .strip()
+        )
 
         print(f"[YT SEARCH] Query Used: {clean_query}")  # Debug print
 
@@ -48,7 +52,6 @@ def youtube_search(query: str) -> Optional[str]:
     except Exception as e:
         print("[YT SEARCH ERROR]", e)
         return None
-
 
 
 # --- 3. Recommendation Helpers ---
@@ -195,7 +198,17 @@ def recommend_mood_playlist(user_text):
     st.session_state.last_music_action = {
         "action": "ask_mood"  # <--- new follow-up state
     }
-    return "Sure — how are you feeling? (sad / chill / hype / romantic / gym / study)"
+    return choose(
+        [
+            "ok but like… how are you even feeling rn. (sad / chill / hype / romantic / gym / study)",
+            "idk just tell me your vibe. sad? chill? hype? romantic? gym? study? pick one.",
+            "sure whatever. what's the mood then. sad, chill, hype, romantic, gym, study?",
+            "fine. what’s the *vibe*? sad / chill / hype / romantic / gym / study. pick one so I can do stuff.",
+            "lol okay but what's your emotional damage level. sad / chill / hype / romantic / gym / study?",
+            "i can’t read minds. just say sad, chill, hype, romantic, gym or study.",
+            "cool, mood check time. which one are you: sad, chill, hype, romantic, gym, or study?",
+        ]
+    )
 
 
 def play_from_genre(genre: str) -> str:
@@ -247,23 +260,27 @@ def handle_music_request(user_text: str, sub_intent: str = "play_track") -> str:
     # Direct links
     spotify = extract_spotify_link(user_text)
     if spotify:
-        return choose([
-            f"cool. spotify link. playing it or whatever:\n{spotify}",
-            f"yeah yeah spotify. here:\n{spotify}",
-            f"fine. opening spotify. happy now?\n{spotify}",
-            f"if you insist on spotify:\n{spotify}",
-            f"here. spotify. I literally do not care:\n{spotify}",
-        ])
+        return choose(
+            [
+                f"cool. spotify link. playing it or whatever:\n{spotify}",
+                f"yeah yeah spotify. here:\n{spotify}",
+                f"fine. opening spotify. happy now?\n{spotify}",
+                f"if you insist on spotify:\n{spotify}",
+                f"here. spotify. I literally do not care:\n{spotify}",
+            ]
+        )
 
     youtube = extract_youtube_link(user_text)
     if youtube:
-        return choose([
-            f"youtube link detected. pressing play:\n{youtube}",
-            f"oh wow a youtube link. crazy. here:\n{youtube}",
-            f"fine. youtube time:\n{youtube}",
-            f"okay sure, youtube:\n{youtube}",
-            f"here's your youtube thing:\n{youtube}",
-        ])
+        return choose(
+            [
+                f"youtube link detected. pressing play:\n{youtube}",
+                f"oh wow a youtube link. crazy. here:\n{youtube}",
+                f"fine. youtube time:\n{youtube}",
+                f"okay sure, youtube:\n{youtube}",
+                f"here's your youtube thing:\n{youtube}",
+            ]
+        )
 
     # Sub-intent routing
     if sub_intent == "recommend_genre":
@@ -278,19 +295,22 @@ def handle_music_request(user_text: str, sub_intent: str = "play_track") -> str:
     # Default: treat input as a track search
     result = youtube_search(user_text)
     if result:
-        return choose([
-            f"found something on youtube I guess:\n{result}",
-            f"here, this came up first. don't blame me:\n{result}",
-            f"alright. this is probably what you meant:\n{result}",
-            f"okay okay chill. playing this:\n{result}",
-            f"here. music. enjoy or whatever:\n{result}",
-        ])
+        return choose(
+            [
+                f"found something on youtube I guess:\n{result}",
+                f"here, this came up first. don't blame me:\n{result}",
+                f"alright. this is probably what you meant:\n{result}",
+                f"okay okay chill. playing this:\n{result}",
+                f"here. music. enjoy or whatever:\n{result}",
+            ]
+        )
 
-    return choose([
-        "bro I cannot find that. say it like a normal person.",
-        "nothing came up. tragic.",
-        "idk what song that is. try again but like… clearer.",
-        "search results: zero. vibe: dead.",
-        "nope. I got nothing. rephrase maybe?",
-    ])
-
+    return choose(
+        [
+            "bro I cannot find that. say it like a normal person.",
+            "nothing came up. tragic.",
+            "idk what song that is. try again but like… clearer.",
+            "search results: zero. vibe: dead.",
+            "nope. I got nothing. rephrase maybe?",
+        ]
+    )

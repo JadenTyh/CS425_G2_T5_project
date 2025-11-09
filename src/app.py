@@ -110,9 +110,9 @@ def store_and_clear():
 
 user_input = st.text_input(
     "You:",
-    placeholder="Example: play some jazz / hello / play Laufey",
+    placeholder="Example: what is the weather / hello there / play some songs / artists like joji",
     key="chat_input",
-    on_change=store_and_clear,  # ✅ store then clear
+    on_change=store_and_clear,  # store then clear
 )
 
 # --- 4. Chat Logic ---
@@ -217,28 +217,27 @@ def run_chat():
 
     # b) If user wants music → call Stage 2 handler
     if intent == "play_music":
-        if intent == "play_music":
-            sub = classify_music_request(user_text)
-            print(f"[DEBUG] Sub-intent detected: {sub}")
-            if sub == "play_track":
-                reply = handle_music_request(user_text, sub)
+        sub = classify_music_request(user_text)
+        print(f"[DEBUG] Sub-intent detected: {sub}")
+        if sub == "play_track":
+            reply = handle_music_request(user_text, sub)
 
-            elif sub == "recommend_genre":
-                # will return a YouTube/Spotify list
-                reply = recommend_genre_playlist(user_text)
-                if "Shall I play" in reply:
-                    for genre in GENRE_TO_ARTISTS.keys():
-                        if genre in user_text.lower():
-                            st.session_state["pending_genre"] = genre
+        elif sub == "recommend_genre":
+            # will return a YouTube/Spotify list
+            reply = recommend_genre_playlist(user_text)
+            if "Shall I play" in reply:
+                for genre in GENRE_TO_ARTISTS.keys():
+                    if genre in user_text.lower():
+                        st.session_state["pending_genre"] = genre
 
-            elif sub == "recommend_artist":
-                reply = recommend_artist_mix(user_text)
+        elif sub == "recommend_artist":
+            reply = recommend_artist_mix(user_text)
 
-            elif sub == "play_mood":
-                reply = recommend_mood_playlist(user_text)
+        elif sub == "play_mood":
+            reply = recommend_mood_playlist(user_text)
 
-            else:
-                reply = handle_music_request(user_user_textinput)  # safe fallback
+        else:
+            reply = handle_music_request(user_text)  # safe fallback
 
     # c) or it's weather
     elif intent == "weather_query":
