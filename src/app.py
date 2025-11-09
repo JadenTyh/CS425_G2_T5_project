@@ -134,14 +134,13 @@ def run_chat():
         if last["action"] == "ask_mood":
             # If user responds with a mood, re-run mood recommend on it
             mood_guess = recommend_mood_playlist(user_text)
-            st.session_state.last_music_action = None
             show_reply(mood_guess)
             return
 
         # YES
         if is_yes(user_text):
+            #clear context for small talk
             st.session_state.last_music_action = None
-
             # If mood recommendation follow-up
             if last["action"] == "play_mood":
                 artist = last.get("artist")
