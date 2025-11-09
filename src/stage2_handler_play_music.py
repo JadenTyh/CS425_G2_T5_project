@@ -31,27 +31,58 @@ def extract_youtube_link(text: str) -> Optional[str]:
 
 def youtube_search(query: str) -> Optional[str]:
     """
-    Search YouTube for likely MUSIC, not interviews or unrelated videos.
+    Searches specifically for real music tracks (YouTube Music auto-generated Topic tracks).
+    Avoids interviews, shorts, random edits, etc.
     """
-    # Tell YouTube what we want explicitly
-    clean_query = f"{query} official audio OR lyrics OR topic -live"
-
     try:
+        # 1) Clean query to avoid accidental non-music matches
+        clean_query = re.sub(
+            r"(official video|live|interview|making of|behind the scenes)",
+            "",
+            query,
+            flags=re.I,
+        ).strip()
+
+        # 2) Force YouTube Music 'Topic' channel search
+        topic_query = f"ytsearch1:{clean_query} - Topic"
+
         video_id = (
             subprocess.check_output(
-                ["yt-dlp", f"ytsearch1:{clean_query}", "--get-id"],
+                [
+                    "yt-dlp",
+                    topic_query,
+                    "--get-id",
+                    "--default-search",
+                    "ytsearch",
+                    "--match-filter",
+                    "duration < 600",  # avoid long videos
+                ],
                 stderr=subprocess.DEVNULL,
             )
             .decode()
             .strip()
         )
 
-        print(f"[YT SEARCH] Query Used: {clean_query}")  # Debug print
-
         return f"https://www.youtube.com/watch?v={video_id}"
-    except Exception as e:
-        print("[YT SEARCH ERROR]", e)
-        return None
+
+    except Exception:
+        # fallback to normal search with "lyrics" bias (still real music)
+        try:
+            video_id = (
+                subprocess.check_output(
+                    [
+                        "yt-dlp",
+                        f"ytsearch1:{query} lyrics",
+                        "--get-id",
+                    ],
+                    stderr=subprocess.DEVNULL,
+                )
+                .decode()
+                .strip()
+            )
+            return f"https://www.youtube.com/watch?v={video_id}"
+        except:
+            return None
 
 
 # --- 3. Recommendation Helpers ---
@@ -74,24 +105,31 @@ def extract_artist_name(text):
     return candidates[0] if candidates else None
 
 
+import random
+
+
 def find_similar_artists(artist: str):
     if not artist:
         return random.sample(GENRE_TO_ARTISTS["indie"], 3)
 
-    # Direct similarity map
-    if artist in SIMILAR_ARTISTS:
-        return SIMILAR_ARTISTS[artist][:3]
+    # Normalize
+    artist_lower = artist.lower()
+
+    # Randomize direct similarity list
+    if artist_lower in {a.lower(): a for a in SIMILAR_ARTISTS}.keys():
+        # Get the exact key in correct case
+        real_key = next(a for a in SIMILAR_ARTISTS if a.lower() == artist_lower)
+        sims = SIMILAR_ARTISTS[real_key]
+        return random.sample(sims, min(len(sims), 3))
 
     # Genre-based fallback
-    artist_lower = artist.lower()
     for genre, artist_list in GENRE_TO_ARTISTS.items():
         if any(a.lower() == artist_lower for a in artist_list):
             others = [a for a in artist_list if a.lower() != artist_lower]
-            return random.sample(others, 3) if len(others) >= 3 else others
+            return random.sample(others, min(len(others), 3))
 
-    # Last resort safe fallback (soft chill artists)
-    fallback = ["Laufey", "Faye Webster", "Clairo", "Men I Trust", "Rex Orange County"]
-    return random.sample(fallback, 3)
+    # Final fallback
+    return None
 
 
 def recommend_genre_playlist(user_text: str) -> str:
@@ -129,6 +167,18 @@ def recommend_genre_playlist(user_text: str) -> str:
 def recommend_artist_mix(user_text):
     artist = extract_artist_name(user_text)
     suggestions = find_similar_artists(artist)
+
+    # If we couldn't find that artist anywhere in our DB:
+    if suggestions is None:
+        return random.choice(
+            [
+                f"Uh... yeah I don't really know **{artist}** like that. My bad.",
+                f"Never heard of **{artist}**. Maybe I'm just uncultured or whatever.",
+                f"Yeah nah, **{artist}** isn't in my brain. Try someone else maybe?",
+                f"I'd love to pretend I know **{artist}**, but I don't. Sorry or something.",
+                f"Bro I swear I don't have **{artist}** in my system. Give me a different name.",
+            ]
+        )
 
     # Determine genre for future playback
     genre = None
