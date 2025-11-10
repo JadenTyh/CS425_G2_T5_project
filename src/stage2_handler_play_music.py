@@ -2,9 +2,12 @@ import re
 import subprocess
 import random
 import streamlit as st
-from stage2_music_knowledge import GENRE_TO_ARTISTS, SIMILAR_ARTISTS, MOOD_TO_GENRE
+import requests
+from stage2_music_knowledge import GENRE_TO_ARTISTS, MOOD_TO_GENRE
 from random import choice as choose
 from typing import Optional
+
+LASTFM_API_KEY = st.secrets["LASTFM_API_KEY"]
 
 # --- 1. Regex for direct music links ---
 SPOTIFY_RE = re.compile(
@@ -86,50 +89,62 @@ def youtube_search(query: str) -> Optional[str]:
 
 
 # --- 3. Recommendation Helpers ---
-
-
 def extract_artist_name(text):
-    """
-    Attempts to detect an artist name in user input by fuzzy scanning.
-    Returns the matched artist string or None.
-    """
-    text_lower = text.lower()
+    text = text.strip()
 
-    for group in GENRE_TO_ARTISTS.values():
-        for artist in group:
-            if artist.lower() in text_lower:
-                return artist
+    # 1) If user writes: "play X by Y" → extract Y
+    match = re.search(r"by\s+([A-Za-z0-9 .'-]+)", text, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
 
-    # fallback: uppercase words that look like names
-    candidates = re.findall(r"[A-Z][a-z]+(?:\s[A-Z][a-z]+)*", text)
-    return candidates[0] if candidates else None
+    # 2) If user writes: "songs like <artist>" or "artists like <artist>"
+    match = re.search(r"(artist|artists|songs?)\s+like\s+([A-Za-z0-9 .'-]+)", text, re.IGNORECASE)
+    if match:
+        return match.group(2).strip()
+
+    # 3) Last.fm lookup as before — BUT only accept artist results
+    try:
+        response = requests.get(
+            "https://ws.audioscrobbler.com/2.0/",
+            params={
+                "method": "artist.search",
+                "artist": text,
+                "api_key": LASTFM_KEY,
+                "format": "json",
+                "limit": 1
+            }
+        ).json()
+
+        matches = response.get("results", {}).get("artistmatches", {}).get("artist", [])
+        if matches:
+            return matches[0]["name"]
+    except:
+        pass
+
+    return None
 
 
-import random
 
 
 def find_similar_artists(artist: str):
     if not artist:
-        return random.sample(GENRE_TO_ARTISTS["indie"], 3)
+        return None
 
-    # Normalize
-    artist_lower = artist.lower()
+    url = "https://ws.audioscrobbler.com/2.0/"
+    params = {
+        "method": "artist.getsimilar",
+        "artist": artist,
+        "api_key": LASTFM_API_KEY,
+        "format": "json",
+        "limit": 10,
+    }
 
-    # Randomize direct similarity list
-    if artist_lower in {a.lower(): a for a in SIMILAR_ARTISTS}.keys():
-        # Get the exact key in correct case
-        real_key = next(a for a in SIMILAR_ARTISTS if a.lower() == artist_lower)
-        sims = SIMILAR_ARTISTS[real_key]
-        return random.sample(sims, min(len(sims), 3))
-
-    # Genre-based fallback
-    for genre, artist_list in GENRE_TO_ARTISTS.items():
-        if any(a.lower() == artist_lower for a in artist_list):
-            others = [a for a in artist_list if a.lower() != artist_lower]
-            return random.sample(others, min(len(others), 3))
-
-    # Final fallback
-    return None
+    try:
+        data = requests.get(url, params=params).json()
+        sims = [a["name"] for a in data["similarartists"]["artist"]]
+        return random.sample(sims, min(len(sims), 3)) if sims else None
+    except:
+        return None
 
 
 def recommend_genre_playlist(user_text: str) -> str:
@@ -169,14 +184,14 @@ def recommend_artist_mix(user_text):
     suggestions = find_similar_artists(artist)
 
     # If we couldn't find that artist anywhere in our DB:
-    if suggestions is None:
+    if artist is None or suggestions is None:
         return random.choice(
             [
-                f"Uh... yeah I don't really know **{artist}** like that. My bad.",
-                f"Never heard of **{artist}**. Maybe I'm just uncultured or whatever.",
-                f"Yeah nah, **{artist}** isn't in my brain. Try someone else maybe?",
-                f"I'd love to pretend I know **{artist}**, but I don't. Sorry or something.",
-                f"Bro I swear I don't have **{artist}** in my system. Give me a different name.",
+                "Yeah I have *no idea* who you're talking about 😐",
+                "I don't know that artist bro. Like at all.",
+                "Say someone real please 😭",
+                "u just making up musicians now?",
+                "Bro that name does not exist in my tiny music brain.",
             ]
         )
 

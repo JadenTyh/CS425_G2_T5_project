@@ -139,7 +139,7 @@ def run_chat():
 
         # YES
         if is_yes(user_text):
-            #clear context for small talk
+            # clear context for small talk
             st.session_state.last_music_action = None
             # If mood recommendation follow-up
             if last["action"] == "play_mood":

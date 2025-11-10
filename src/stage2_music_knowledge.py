@@ -189,60 +189,6 @@ GENRE_TO_ARTISTS = {
 }
 
 
-# Quick Artist Similarity Map (expandable later)
-SIMILAR_ARTISTS = {
-    # --- INDIE / BEDROOM POP ---
-    "Phoebe Bridgers": ["Lucy Dacus", "Julien Baker", "Boygenius", "Soccer Mommy", "Snail Mail"],
-    "Mitski": ["Japanese Breakfast", "Weyes Blood", "Faye Webster", "Big Thief", "Adrienne Lenker"],
-    "Clairo": ["Beabadoobee", "Girl in Red", "Laufey", "Men I Trust", "Rex Orange County"],
-    "Beabadoobee": ["Clairo", "Soccer Mommy", "Snail Mail", "Phoebe Bridgers", "Laufey"],
-    "Men I Trust": ["Still Woozy", "Crumb", "Mild High Club", "Mac DeMarco", "Barrie"],
-    "Laufey": ["Norah Jones", "Lana Del Rey", "Beabadoobee", "Faye Webster", "Lizzy McAlpine"],
-    "Lana Del Rey": ["Weyes Blood", "Florence + The Machine", "Lorde", "Mazzy Star", "Cigarettes After Sex"],
-    "Cigarettes After Sex": ["Joji", "The xx", "Beach House", "Mazzy Star", "Ricky Eat Acid"],
-
-    # --- ALT / INDIE BANDS ---
-    "Arctic Monkeys": ["The Strokes", "The 1975", "Wallows", "Cage the Elephant", "The Neighbourhood"],
-    "The 1975": ["Arctic Monkeys", "The Japanese House", "LANY", "Wallows", "COIN"],
-    "Wallows": ["Hippo Campus", "The Backseat Lovers", "The 1975", "Dayglow", "Peach Pit"],
-    "Peach Pit": ["Hippo Campus", "Dayglow", "Rex Orange County", "Still Woozy", "Mac DeMarco"],
-    "Mac DeMarco": ["Mild High Club", "Men I Trust", "King Krule", "Rex Orange County", "Boy Pablo"],
-
-    # --- R&B / SOUL ---
-    "SZA": ["Summer Walker", "Kehlani", "Jhené Aiko", "Cleo Sol", "H.E.R."],
-    "Daniel Caesar": ["Frank Ocean", "Omar Apollo", "Steve Lacy", "Brent Faiyaz", "Giveon"],
-    "Frank Ocean": ["Daniel Caesar", "SZA", "Tyler, The Creator", "Blood Orange", "Kali Uchis"],
-    "Brent Faiyaz": ["The Weeknd", "PARTYNEXTDOOR", "dvsn", "Giveon", "6LACK"],
-    "Steve Lacy": ["Blood Orange", "Tyler, The Creator", "Omar Apollo", "Rex Orange County", "Faye Webster"],
-
-    # --- CHILL / SOFT POP ---
-    "Joji": ["Keshi", "DPR Ian", "Cigarettes After Sex", "RINI", "Sycco"],
-    "Keshi": ["Joji", "Laufey", "DPR IAN", "RINI", "Jeremy Zucker"],
-    "Jeremy Zucker": ["Chelsea Cutler", "Alexander 23", "Lauv", "Conan Gray", "Shallou"],
-    "Lorde": ["Lana Del Rey", "Florence + The Machine", "Gracie Abrams", "Girl in Red", "Holly Humberstone"],
-
-    # --- POP / GIRLPOP / MODERN ---
-    "Taylor Swift": ["Gracie Abrams", "Olivia Rodrigo", "Phoebe Bridgers", "Lorde", "Sabrina Carpenter"],
-    "Olivia Rodrigo": ["Gracie Abrams", "Tate McRae", "Sabrina Carpenter", "Conan Gray", "Nessa Barrett"],
-    "Sabrina Carpenter": ["Chappell Roan", "Olivia Rodrigo", "Maisie Peters", "Reneé Rapp", "Tate McRae"],
-    "Gracie Abrams": ["Phoebe Bridgers", "Lizzy McAlpine", "Olivia Rodrigo", "Holly Humberstone", "Lorde"],
-
-    # --- ROCK / ALT / CLASSICS ---
-    "Radiohead": ["The Smashing Pumpkins", "The Cure", "The Strokes", "Interpol", "Joy Division"],
-    "The Strokes": ["Arctic Monkeys", "The Libertines", "The Killers", "Franz Ferdinand", "Metric"],
-    "Paramore": ["Fall Out Boy", "My Chemical Romance", "PVRIS", "Tonight Alive", "Hayley Williams"],
-
-    # --- HIP-HOP / ALT RAP ---
-    "Tyler, The Creator": ["Earl Sweatshirt", "Steve Lacy", "Frank Ocean", "Smino", "Childish Gambino"],
-    "Kendrick Lamar": ["J. Cole", "Childish Gambino", "Anderson .Paak", "Saba", "Denzel Curry"],
-    "Joey Bada$$": ["Saba", "Mick Jenkins", "JID", "Denzel Curry", "Isaiah Rashad"],
-
-    # --- CITY POP / J-POP ---
-    "Miki Matsubara": ["Mariya Takeuchi", "Tatsuro Yamashita", "Anri", "Taeko Ohnuki", "Yumi Matsutoya"],
-    "Lamp": ["Fishmans", "Lily Chou-Chou", "Vaundy", "Cö Shu Nie", "Hitsujibungaku"],
-}
-
-
 # Mood → Genre Mappings
 MOOD_TO_GENRE = {
     "sad": "indie",
