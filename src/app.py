@@ -213,7 +213,7 @@ def run_chat():
 
     # a) Determine user intent using classifier (Stage 1)
     intent = classify_intent(user_text)
-
+    print(f"[DEBUG] Main-intent detected: {intent}")
     # b) If user wants music → call Stage 2 handler
     if intent == "play_music":
         sub = classify_music_request(user_text)
