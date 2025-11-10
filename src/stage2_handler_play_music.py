@@ -3,7 +3,7 @@ import subprocess
 import random
 import streamlit as st
 import requests
-from stage2_music_knowledge import GENRE_TO_ARTISTS, MOOD_TO_GENRE
+from stage2_music_knowledge import MOOD_TO_GENRE, SUPPORTED_GENRES
 from random import choice as choose
 from typing import Optional
 
@@ -86,6 +86,46 @@ def youtube_search(query: str) -> Optional[str]:
             return f"https://www.youtube.com/watch?v={video_id}"
         except:
             return None
+      
+# helper function for dynamic lookup  
+def get_top_artists_for_genre(genre: str):
+    url = "https://ws.audioscrobbler.com/2.0/"
+    params = {
+        "method": "tag.gettopartists",
+        "tag": genre,
+        "api_key": LASTFM_API_KEY,
+        "format": "json",
+        "limit": 20,
+    }
+    try:
+        data = requests.get(url, params=params).json()
+        return [a["name"] for a in data["topartists"]["artist"]]
+    except:
+        return None
+    
+# helper function for dynamic lookup
+def get_artist_top_genre(artist: str):
+    try:
+        data = requests.get(
+            "https://ws.audioscrobbler.com/2.0/",
+            params={
+                "method": "artist.gettoptags",
+                "artist": artist,
+                "api_key": LASTFM_API_KEY,
+                "format": "json",
+            }
+        ).json()
+
+        tags = data.get("toptags", {}).get("tag", [])
+        if not tags:
+            return None
+
+        # pick the highest weighted tag
+        return tags[0]["name"].lower()
+
+    except:
+        return None
+
 
 
 # --- 3. Recommendation Helpers ---
@@ -148,9 +188,11 @@ def find_similar_artists(artist: str):
 
 
 def recommend_genre_playlist(user_text: str) -> str:
-    """Ask user permission before playing a genre playlist."""
-    for genre in GENRE_TO_ARTISTS:
-        if genre.lower() in user_text.lower():
+    user_lower = user_text.lower()
+
+    # detect any known genre in user input
+    for genre in SUPPORTED_GENRES:
+        if genre in user_lower:
             st.session_state.last_music_action = {
                 "pending": True,
                 "action": "recommend_genre",
@@ -179,6 +221,7 @@ def recommend_genre_playlist(user_text: str) -> str:
     )
 
 
+
 def recommend_artist_mix(user_text):
     artist = extract_artist_name(user_text)
     suggestions = find_similar_artists(artist)
@@ -196,11 +239,7 @@ def recommend_artist_mix(user_text):
         )
 
     # Determine genre for future playback
-    genre = None
-    for g, artists in GENRE_TO_ARTISTS.items():
-        if artist in artists:
-            genre = g
-            break
+    genre = get_artist_top_genre(artist)
 
     st.session_state.last_music_action = {
         "action": "recommend_artist",
@@ -227,8 +266,9 @@ def recommend_mood_playlist(user_text):
         if mood in user_text.lower():
             genre = MOOD_TO_GENRE[mood]
 
-            artists = GENRE_TO_ARTISTS.get(genre, [])
+            artists = get_top_artists_for_genre(genre)
             sample = random.choice(artists) if artists else None
+
 
             st.session_state.last_music_action = {
                 "action": "play_mood",
@@ -278,9 +318,10 @@ def recommend_mood_playlist(user_text):
 
 def play_from_genre(genre: str) -> str:
     """Pick a random artist and return an embedded YouTube link (teenager edition)."""
-    import random
 
-    artists = GENRE_TO_ARTISTS.get(genre, [])
+    artists = get_top_artists_for_genre(genre)
+    if not artists:
+        return "bro i tried, but last.fm literally gave me nothing 💀"
     if not artists:
         return choose(
             [

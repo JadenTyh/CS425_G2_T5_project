@@ -12,7 +12,6 @@ from stage2_handler_play_music import (
     recommend_artist_mix,
     recommend_mood_playlist,
     play_from_genre,
-    GENRE_TO_ARTISTS,
 )
 from stage2_predict_music import classify_music_request
 from stage2_handler_weather import handle_weather_request
@@ -222,12 +221,7 @@ def run_chat():
             reply = handle_music_request(user_text, sub)
 
         elif sub == "recommend_genre":
-            # will return a YouTube/Spotify list
             reply = recommend_genre_playlist(user_text)
-            if "Shall I play" in reply:
-                for genre in GENRE_TO_ARTISTS.keys():
-                    if genre in user_text.lower():
-                        st.session_state["pending_genre"] = genre
 
         elif sub == "recommend_artist":
             reply = recommend_artist_mix(user_text)
