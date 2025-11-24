@@ -46,6 +46,10 @@ def map_intent(intent_name):
         return "play_music"
     elif intent_name in ["getweather"]:
         return "weather_query"
+    elif intent_name in ['searchcreativework']:
+        return "search_creative_work"
+    elif intent_name in ['searchscreeningevent']:
+        return "search_screening_event"
     return "small_talk"
 
 
@@ -79,6 +83,8 @@ print("\nDataset successfully built!")
 print(f"play_music examples: {len([x for x in final_data if x['intent']=='play_music'])}")
 print(f"small_talk examples: {len([x for x in final_data if x['intent']=='small_talk'])}")
 print(f"weather_query examples: {len([x for x in final_data if x['intent']=='weather_query'])}")
+print(f"search_creative_work examples: {len([x for x in final_data if x['intent']=='search_creative_work'])}")
+print(f"search_screening_event examples: {len([x for x in final_data if x['intent']=='search_screening_event'])}")
 print(f"Train size: {len(train_data)}")
 print(f"Test size:  {len(test_data)}")
 print(f"Saved to: {OUTPUT_DIR}/intents_train.json and intents_test.json")

@@ -40,6 +40,8 @@ requests>=2.31
 
 # UI
 streamlit>=1.36
+matplotlib
+seaborn
 
 # Jupyter kernel for your venv
 ipykernel>=6.29

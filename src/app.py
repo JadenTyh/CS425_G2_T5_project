@@ -15,11 +15,15 @@ from stage2_handler_play_music import (
 )
 from stage2_predict_music import classify_music_request
 from stage2_handler_weather import handle_weather_request
+from stage2_handler_creative_work import *
+from stage2_handler_screening import *
 from stage2_confirm import is_yes, is_no
 
 if "last_music_action" not in st.session_state:
     st.session_state.last_music_action = None
 
+if "last_screening_action" not in st.session_state:
+    st.session_state.last_screening_action = None
 
 # helper function to randomize text response
 def choose(*options):
@@ -58,7 +62,7 @@ def show_reply(reply):
     st.write(reply)
 
 
-# --- 1. Load Trained Intent Classifier Model ---
+# 1. Load Trained Intent Classifier Model
 
 MODEL_DIR = "models/intent_classifier"  # Folder where stage1_classifier saved the model
 
@@ -81,23 +85,23 @@ def classify_intent(text):
     return model.config.id2label[pred_id]  # Convert ID back to readable label
 
 
-# --- 2. Streamlit UI Setup ---
+# 2. Streamlit UI Setup
 
-st.set_page_config(page_title="Music & Weather Chatbot", page_icon="🎵")
-st.title("🎵 Music & Weather Chatbot")
+st.set_page_config(page_title="Music, Weather, Movies Chatbot", page_icon="🎵")
+st.title("🎵 Music, Weather, Movies Chatbot")
 show_reply(
     choose(
-        "Yeah, I'm here. Ask for music, weather, whatever.",
-        "What do you want? Music? Weather? Small talk? Cool.",
+        "Yeah yeah, I'm here. Ask for music, weather, movies whatever.",
+        "What do you want? Music? Weather? Movies? Small talk? Cool.",
         "I'm awake. Barely. What do you need.",
         "Sure. I can play music or whatever. Just say it.",
     )
 )
 
 
-# --- 3. Chat Input ---
+# 3. Chat Input
 
-# --- Reset text input BEFORE drawing widget ---
+# Reset text input BEFORE drawing widget
 if "chat_buffer" not in st.session_state:
     st.session_state.chat_buffer = ""  # stores last submitted message temporarily
 
@@ -114,7 +118,7 @@ user_input = st.text_input(
     on_change=store_and_clear,  # store then clear
 )
 
-# --- 4. Chat Logic ---
+# 4. Chat Logic
 
 
 def run_chat():
@@ -125,8 +129,8 @@ def run_chat():
     # RESET buffer after we capture it
     st.session_state.chat_buffer = ""
 
-    # --- Conversation Follow-up Handling (Yes/No to music suggestions) ---
-    # --- FOLLOW-UP STATE CHECK ---
+    # Conversation Follow-up Handling (Yes/No to music suggestions)
+    # FOLLOW-UP STATE CHECK
     if st.session_state.last_music_action:
         last = st.session_state.last_music_action
         # for asking mood
@@ -236,12 +240,20 @@ def run_chat():
     elif intent == "weather_query":
         reply = handle_weather_request(user_text)
 
-    # d) Otherwise it's small talk → return small talk reply
+    # d) or it's creative work search
+    elif intent == 'search_creative_work':
+        reply = search_creative_work(user_text)
+
+    # e) or it's screening event search
+    elif intent == 'search_screening_event':
+        reply = search_screening_event(user_text) 
+
+    # f) Otherwise it's small talk → return small talk reply
     else:
         reply = generate_response(user_text)
 
     # e) Display response
-    # --- Display response with embedded media if possible ---
+    # Display response with embedded media if possible
     show_reply(reply)
     return
 
