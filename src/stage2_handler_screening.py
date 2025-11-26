@@ -110,11 +110,11 @@ def search_screening_event(user_query):
             google_url = f"https://www.google.com/search?q={urllib.parse.quote(search_query)}"
             return choose(
                 [ # Giving varied responses with a 'moody tenager characteristic' for no results found
-                    f"No movies found at **{location}**. Such is life 🤷",
-                    f"No movies found at **{location}**. Oh well 🤷",
-                    f"No movies found at **{location}**. Such is life 🤷",
-                    f"No movies found at **{location}**. We do not get what we want in life do we 🤷",
-                    f"No movies found at **{location}**. If only life was simpler 😤"
+                    f"No movies found at **{location}**. Such is life 🤷 \n",
+                    f"No movies found at **{location}**. Oh well 🤷 \n",
+                    f"No movies found at **{location}**. Such is life 🤷 \n",
+                    f"No movies found at **{location}**. We do not get what we want in life do we 🤷 \n",
+                    f"No movies found at **{location}**. If only life was simpler 😤 \n"
                 ]
             ) + '\n im lazy now so here are some links you can explore yourself \n ' + google_url 
 
@@ -123,7 +123,7 @@ def search_screening_event(user_query):
         print(showtimes)
 
         # Format the results
-        result_lines = [f"Showtimes for movies at **{location}**:"]
+        result_lines = [f"Well, good for you dude. Here are the showtimes for movies at **{location}**:"]
         for day_entry in showtimes:
             day = f"{day_entry.get('day', 'Unknown day')} {day_entry.get('date', '')}"
             movies = day_entry.get("movies", [])
@@ -152,15 +152,15 @@ def search_screening_event(user_query):
             google_url = f"https://www.google.com/search?q={urllib.parse.quote(search_query)}"
             return choose(
                 [ # Giving varied responses with a 'moody tenager characteristic' for no results found
-                    f"No showtimes found for **{movie_title}**. Such is life 🤷",
-                    f"No showtimes found for **{movie_title}**. Oh well 🤷",
-                    f"No showtimes found for **{movie_title}**. Such is life 🤷",
-                    f"No showtimes found for **{movie_title}**. We do not get what we want in life do we 🤷",
-                    f"No showtimes found for **{movie_title}**. If only life was simpler 😤"
+                    f"No showtimes found for **{movie_title}**. Such is life 🤷 \n",
+                    f"No showtimes found for **{movie_title}**. Oh well 🤷 \n",
+                    f"No showtimes found for **{movie_title}**. Such is life 🤷 \n",
+                    f"No showtimes found for **{movie_title}**. We do not get what we want in life do we 🤷 \n",
+                    f"No showtimes found for **{movie_title}**. If only life was simpler 😤 \n"
                 ]
             ) + '\n im lazy now so here are some links you can explore yourself \n ' + google_url 
         
-        result_lines = [f"Showtimes for **{movie_title}**:"]
+        result_lines = [f"Well, good for you dude. Here are the showtimes for **{movie_title}**:"]
         for day_entry in showtimes:
             day = day_entry.get("day", "Unknown day")
             theaters = day_entry.get("theaters", [])

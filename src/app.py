@@ -15,7 +15,7 @@ from stage2_handler_play_music import (
 )
 from stage2_predict_music import classify_music_request
 from stage2_handler_weather import handle_weather_request
-from stage2_handler_creative_work import *
+#from stage2_handler_creative_work import *
 from stage2_handler_screening import *
 from stage2_confirm import is_yes, is_no
 
@@ -113,7 +113,7 @@ def store_and_clear():
 
 user_input = st.text_input(
     "You:",
-    placeholder="Example: what is the weather / hello there / play some songs / artists like joji",
+    placeholder="Example: what is the weather / hello there / play some songs / artists like joji / showtimes for zootopia 2 / showtimes at Cinemark Bluffton",
     key="chat_input",
     on_change=store_and_clear,  # store then clear
 )
@@ -240,9 +240,9 @@ def run_chat():
     elif intent == "weather_query":
         reply = handle_weather_request(user_text)
 
-    # d) or it's creative work search
-    elif intent == 'search_creative_work':
-        reply = search_creative_work(user_text)
+    # # d) or it's creative work search
+    # elif intent == 'search_creative_work':
+    #     reply = search_creative_work(user_text)
 
     # e) or it's screening event search
     elif intent == 'search_screening_event':
