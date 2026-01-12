@@ -23,7 +23,7 @@ python src/stage1_intent_classifier.py
 
 ### 3.5. Test the classifier model (optional)
 ```bash
-python src/stage1_intent_classifier_test. py
+python src/stage1_intent_classifier_test.py
 ```
 > No front end, just runs in console. 
 
@@ -35,7 +35,7 @@ python src/stage1_intent_classifier_test. py
 
 ### 5. Train the music_subintent model
 ```bash
-python src/stage1_5_music_subintent. py
+python src/stage1_5_music_subintent.py
 ```
 > **Note:** This might take another 30-50 minutes.
 
