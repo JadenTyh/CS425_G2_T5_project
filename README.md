@@ -17,13 +17,13 @@ python src/stage0_convert_local_dataset.py
 
 ### 3. Train the classifier model
 ```bash
-python src/stage1_classifier_.py
+python src/stage1_intent_classifier.py
 ```
 > **Note:** This takes about 45 minutes.  Duration may vary depending on your laptop's GPU power. 
 
 ### 3.5. Test the classifier model (optional)
 ```bash
-python src/stage1_classifier_test. py
+python src/stage1_intent_classifier_test. py
 ```
 > No front end, just runs in console. 
 
